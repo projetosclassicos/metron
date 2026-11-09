@@ -1,0 +1,1364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Μέτρον — Oficina de Escansão e Recitação Métrica</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['"EB Garamond"', '"Gentium Plus"', 'Georgia', 'serif'],
+                        mono: ['"Courier Prime"', 'Courier', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts: EB Garamond (suporte completo a grego politônico) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #ffffff;
+            --fg: #0a0a0a;
+            --muted: #666666;
+            --border: #d4d4d4;
+            --border-strong: #0a0a0a;
+            --surface: #f7f7f7;
+        }
+        html.dark {
+            --bg: #0a0a0a;
+            --fg: #f0f0f0;
+            --muted: #888888;
+            --border: #262626;
+            --border-strong: #f0f0f0;
+            --surface: #141414;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--fg);
+            font-family: 'EB Garamond', Georgia, serif;
+            -webkit-font-smoothing: antialiased;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        /* Custom Scrollbars minimalistas */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--muted);
+        }
+
+        /* Sliders em Preto e Branco */
+        input[type="range"] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 1px;
+            background: var(--fg);
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--fg);
+            border: 2px solid var(--bg);
+            margin-top: -5.5px;
+            border-radius: 0;
+        }
+        input[type="range"]::-moz-range-track {
+            height: 1px;
+            background: var(--fg);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: var(--fg);
+            border: 2px solid var(--bg);
+            border-radius: 0;
+        }
+
+        /* Utilitários de Borda e Tipografia */
+        .hairline-border {
+            border-color: var(--border);
+        }
+        .strong-border {
+            border-color: var(--border-strong);
+        }
+        .surface-bg {
+            background-color: var(--surface);
+        }
+        .btn-classic {
+            border: 1px solid var(--border-strong);
+            background-color: var(--bg);
+            color: var(--fg);
+            transition: all 0.12s ease;
+        }
+        .btn-classic:hover {
+            background-color: var(--fg);
+            color: var(--bg);
+        }
+        .btn-classic.active, .btn-invert {
+            background-color: var(--fg);
+            color: var(--bg);
+            border: 1px solid var(--border-strong);
+        }
+        .btn-invert:hover {
+            opacity: 0.85;
+        }
+
+        /* Animação sutil de pulso no visor */
+        @keyframes pulse-border {
+            0% { transform: scale(1); }
+            15% { transform: scale(1.015); }
+            100% { transform: scale(1); }
+        }
+        .beat-flash {
+            animation: pulse-border 0.18s ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-neutral-800 selection:text-white dark:selection:bg-neutral-200 dark:selection:text-black">
+
+    <!-- CABEÇALHO -->
+    <header class="border-b hairline-border px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-baseline gap-3">
+            <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight">Μέτρον</h1>
+            <span class="text-xs sm:text-sm uppercase tracking-[0.2em] text-[var(--muted)]">Escansão &amp; Recitação Rítmica</span>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <!-- Seletor de Exemplos Clássicos -->
+            <div class="flex items-center gap-1.5 text-xs uppercase tracking-widest text-[var(--muted)] mr-2">
+                <span class="hidden md:inline">Exemplo:</span>
+                <button onclick="loadPreset('odyssey')" class="px-2 py-1 border hairline-border hover:border-[var(--fg)] text-[var(--fg)] transition" title="Homero, Odisseia VI, 71-72">Odisseia VI</button>
+                <button onclick="loadPreset('iliad')" class="px-2 py-1 border hairline-border hover:border-[var(--fg)] text-[var(--fg)] transition" title="Homero, Ilíada I, 1-2">Ilíada I</button>
+                <button onclick="loadPreset('aeneid')" class="px-2 py-1 border hairline-border hover:border-[var(--fg)] text-[var(--fg)] transition" title="Virgílio, Eneida I, 1-2">Eneida I</button>
+            </div>
+
+            <!-- Botão Tema Claro/Escuro -->
+            <button id="themeToggleBtn" onclick="toggleTheme()" class="btn-classic px-3 py-1 text-xs uppercase tracking-widest flex items-center gap-2" title="Alternar tema Claro / Escuro">
+                <span id="themeIcon">◐</span>
+                <span id="themeLabel">Escuro</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL: DUAS COLUNAS -->
+    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x hairline-border">
+
+        <section class="lg:col-span-6 p-5 sm:p-7 flex flex-col gap-7 overflow-y-auto">
+            
+            <!-- ETAPA 1: INSERÇÃO DE VERSOS -->
+            <div class="flex flex-col gap-2.5">
+                <div class="flex items-center justify-between border-b hairline-border pb-1.5">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">I.</span>
+                        <h2 class="text-lg font-medium tracking-wide">Inserção de Versos</h2>
+                    </div>
+                    <button onclick="sendStep1ToStep2()" class="btn-classic px-2.5 py-1 text-xs uppercase tracking-wider">
+                        Enviar para Separação Silábica ↓
+                    </button>
+                </div>
+                <p class="text-xs text-[var(--muted)] leading-relaxed">
+                    Insira ou cole os versos em grego politônico ou latim (um verso por linha).
+                </p>
+                <textarea id="step1Input" rows="2" spellcheck="false"
+                    class="w-full p-3 bg-transparent border hairline-border focus:border-[var(--fg)] focus:outline-none text-lg sm:text-xl leading-relaxed resize-y"
+                    placeholder="Digite ou cole os versos aqui..."></textarea>
+            </div>
+
+            <!-- ETAPA 2: SEPARAÇÃO SILÁBICA -->
+            <div class="flex flex-col gap-2.5">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b hairline-border pb-1.5">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">II.</span>
+                        <h2 class="text-lg font-medium tracking-wide">Separação Silábica</h2>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="autoSyllabifyFromStep1()" class="px-2 py-1 border hairline-border hover:border-[var(--fg)] text-xs uppercase tracking-wider transition" title="Tentar separar as sílabas automaticamente a partir do texto da Etapa 1">
+                            Auto-Silabar
+                        </button>
+                        <button onclick="loadPresetSyllables()" class="px-2 py-1 border hairline-border hover:border-[var(--fg)] text-xs uppercase tracking-wider transition" title="Restaurar separação silábica do exemplo atual">
+                            Exemplo Silabado
+                        </button>
+                        <button onclick="generateGridFromStep2()" class="btn-classic px-2.5 py-1 text-xs uppercase tracking-wider font-medium">
+                            Gerar Grade de Quantidades ↓
+                        </button>
+                    </div>
+                </div>
+                <p class="text-xs text-[var(--muted)] leading-relaxed">
+                    Separe as sílabas da mesma palavra com hífens (<code class="px-1 surface-bg">-</code>) e as palavras com espaços.
+                </p>
+                <textarea id="step2Input" rows="2" spellcheck="false"
+                    class="w-full p-3 bg-transparent border hairline-border focus:border-[var(--fg)] focus:outline-none text-lg sm:text-xl leading-relaxed resize-y"
+                    placeholder="Ex: ζεύ-ξασ' ἡ-μι-ό-νους, πτύ-ξα-σά τε εἵ-μα-τα κα-λά,"></textarea>
+            </div>
+
+            <!-- ETAPA 3: MARCAÇÃO DE QUANTIDADES E PÉS -->
+            <div class="flex flex-col gap-3 flex-1">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b hairline-border pb-1.5">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">III.</span>
+                        <h2 class="text-lg font-medium tracking-wide">Quantidades &amp; Pés Métricos</h2>
+                    </div>
+
+                    <!-- Alternador de visualização ou sincronia -->
+                    <div class="flex items-center gap-2 text-xs text-[var(--muted)]">
+                        <span>Clique na sílaba: <strong class="text-[var(--fg)]">— / ⏑ / —x</strong></span>
+                        <span>·</span>
+                        <span>Entre sílabas: <strong class="text-[var(--fg)]">|</strong> (pé)</span>
+                    </div>
+                </div>
+
+                <!-- 3A: MODO VISUAL INTERATIVO -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs uppercase tracking-widest text-[var(--muted)]">a) Grade Visual Interativa</span>
+                        <span id="scansionStats" class="text-xs italic text-[var(--muted)]"></span>
+                    </div>
+                    <div id="visualScansionContainer" class="p-3.5 border hairline-border surface-bg flex flex-col gap-4 max-h-[300px] overflow-y-auto">
+                        <!-- Renderizado via JS -->
+                    </div>
+                </div>
+
+                <!-- 3B: MODO TEXTO DIRETO (SINCRONIZADO) -->
+                <div class="flex flex-col gap-1.5 mt-1">
+                    <div class="flex items-center justify-between">
+                        <label for="step3Input" class="text-xs uppercase tracking-widest text-[var(--muted)]">
+                            b) Notação Direta Sincronizada <span class="normal-case italic">(edite livremente: —, ⏑, —x, |)</span>
+                        </label>
+                        <button onclick="resetScansionExample()" class="text-xs underline text-[var(--muted)] hover:text-[var(--fg)]">
+                            Restaurar Escansão Padrão
+                        </button>
+                    </div>
+                    <textarea id="step3Input" rows="3" spellcheck="false"
+                        oninput="onStep3TextChange()"
+                        class="w-full p-3 bg-transparent border hairline-border focus:border-[var(--fg)] focus:outline-none text-base sm:text-lg leading-relaxed resize-y font-serif"
+                        placeholder="Ex: ζεύ(—)-ξασ'(—) | ἡ(—)-μι(⏑)-ό(⏑)- | ..."></textarea>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="lg:col-span-6 p-5 sm:p-7 flex flex-col justify-between gap-6">
+
+            <!-- TOPO DO RECITADOR: SELETOR DE VERSOS E INDICADORES -->
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-wrap items-center justify-between gap-2 border-b hairline-border pb-2">
+                    <div class="flex items-baseline gap-2">
+                        <h2 class="text-lg font-medium tracking-wide">Recitador &amp; Metrônomo Moraico</h2>
+                    </div>
+
+                    <!-- Seletor de Modo de Loop -->
+                    <div class="flex items-center gap-1 text-xs">
+                        <button id="loopAllBtn" onclick="setLoopMode('all')" class="btn-classic active px-2.5 py-1 uppercase tracking-wider">
+                            Todos os Versos
+                        </button>
+                        <button id="loopOneBtn" onclick="setLoopMode('one')" class="btn-classic px-2.5 py-1 uppercase tracking-wider">
+                            Verso Atual
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Abas de Versos -->
+                <div id="verseTabsContainer" class="flex flex-wrap items-center gap-1.5">
+                    <!-- Renderizado via JS -->
+                </div>
+
+                <!-- GRANDE VISOR TIPOGRÁFICO CENTRAL -->
+                <div id="mainDisplayBox" class="relative border strong-border py-10 px-6 flex flex-col items-center justify-center min-h-[250px] sm:min-h-[280px] select-none overflow-hidden">
+                    
+                    <!-- Indicadores Superiores do Visor (Verso, Pé Métrico, Mora) -->
+                    <div class="absolute top-3 left-4 right-4 flex items-center justify-between text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
+                        <span id="displayVerseLabel">Verso I</span>
+                        <span id="displayFootLabel" class="font-semibold text-[var(--fg)] border hairline-border px-2 py-0.5">Pé I</span>
+                        <span id="displayMoraLabel">2 Morae</span>
+                    </div>
+
+                    <!-- Sinal Quantitativo Acima (—, ⏑, —x) -->
+                    <div id="displayQuantitySymbol" class="text-4xl sm:text-5xl font-light tracking-widest h-12 flex items-center justify-center text-[var(--fg)] mb-1">
+                        —
+                    </div>
+
+                    <!-- Sílaba Atual em Destaque -->
+                    <div id="displaySyllableText" class="text-6xl sm:text-7xl md:text-8xl font-normal tracking-tight text-center leading-none my-2">
+                        ἀλλ'
+                    </div>
+
+                    <!-- Indicador de Pulsos (Mora Dots) -->
+                    <div id="displayMoraDots" class="mt-4 flex items-center gap-2.5 h-4">
+                        <span class="w-2.5 h-2.5 border strong-border bg-[var(--fg)]"></span>
+                        <span class="w-2.5 h-2.5 border strong-border"></span>
+                    </div>
+
+                    <!-- Barra de Progresso Fluida da Sílaba Atual -->
+                    <div class="absolute bottom-0 left-0 right-0 h-1.5 bg-[var(--surface)] border-t hairline-border">
+                        <div id="syllableProgressBar" class="h-full bg-[var(--fg)] w-0"></div>
+                    </div>
+                </div>
+
+                <!-- KARAOKÊ MÉTRICO (VERSO INTEIRO COM DESTAQUE EM TEMPO REAL) -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex items-center justify-between text-xs uppercase tracking-widest text-[var(--muted)]">
+                        <span>Visão Integral do Verso <span class="normal-case italic">(clique em qualquer sílaba para saltar)</span></span>
+                        <span id="verseTotalMoraeLabel">24 morae</span>
+                    </div>
+                    <div id="karaokeContainer" class="p-4 border hairline-border surface-bg min-h-[96px] flex flex-wrap items-center content-center gap-y-3 gap-x-1">
+                        <!-- Renderizado via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL DE CONTROLES DO METRÔNOMO -->
+            <div class="border-t hairline-border pt-5 flex flex-col gap-5">
+                
+                <!-- Botões Principais de Transporte e Áudio -->
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-2">
+                        <button id="playPauseBtn" onclick="togglePlay()" class="btn-invert px-6 py-2.5 text-sm uppercase tracking-[0.2em] font-semibold flex items-center gap-2.5 min-w-[140px] justify-center">
+                            <span id="playPauseIcon">▶</span>
+                            <span id="playPauseText">Iniciar</span>
+                        </button>
+                        <button onclick="resetMetronome()" class="btn-classic px-4 py-2.5 text-xs uppercase tracking-widest" title="Voltar ao início">
+                            ⟲ Reiniciar
+                        </button>
+                        <button onclick="stepBackward()" class="btn-classic px-3 py-2.5 text-xs" title="Sílaba anterior">
+                            ◁
+                        </button>
+                        <button onclick="stepForward()" class="btn-classic px-3 py-2.5 text-xs" title="Próxima sílaba">
+                            ▷
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <!-- Toggle de Loop Ativo/Inativo -->
+                        <button id="loopToggleBtn" onclick="toggleLoopEnabled()" class="btn-classic active px-3 py-2 text-xs uppercase tracking-wider" title="Repetir continuamente">
+                            ∞ Loop: Sim
+                        </button>
+
+                        <!-- Botão Mute / Unmute Sintetizador Web Audio -->
+                        <button id="muteToggleBtn" onclick="toggleMute()" class="btn-classic active px-3 py-2 text-xs uppercase tracking-wider flex items-center gap-1.5" title="Ativar/Desativar som de madeira do metrônomo">
+                            <span id="muteIcon">♪</span>
+                            <span id="muteText">Som: Ativo</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Sliders de Velocidade (BPM por Mora) e Pausa entre Versos -->
+                <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center pt-1">
+                    
+                    <!-- Controle de BPM -->
+                    <div class="sm:col-span-7 flex flex-col gap-1.5 border hairline-border p-3">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="uppercase tracking-widest text-[var(--muted)]">Velocidade (<span class="normal-case italic">1 Mora = ⏑</span>)</span>
+                            <span class="font-semibold"><span id="bpmValueDisplay">90</span> BPM <span id="msValueDisplay" class="text-[var(--muted)] font-normal">(667 ms)</span></span>
+                        </div>
+                        <div class="flex items-center gap-3 mt-1">
+                            <span class="text-xs text-[var(--muted)]">40</span>
+                            <input id="bpmSlider" type="range" min="40" max="160" value="90" oninput="updateBpm(this.value)" class="w-full">
+                            <span class="text-xs text-[var(--muted)]">160</span>
+                        </div>
+                    </div>
+
+                    <!-- Pausa de Fim de Verso -->
+                    <div class="sm:col-span-5 flex flex-col gap-1.5 border hairline-border p-3 h-full justify-between">
+                        <span class="text-xs uppercase tracking-widest text-[var(--muted)]">Pausa entre Versos</span>
+                        <div class="grid grid-cols-3 gap-1.5 mt-1">
+                            <button onclick="setEndPause(0)" id="pauseBtn0" class="btn-classic py-1 text-xs">0 mora</button>
+                            <button onclick="setEndPause(1)" id="pauseBtn1" class="btn-classic active py-1 text-xs">1 mora</button>
+                            <button onclick="setEndPause(2)" id="pauseBtn2" class="btn-classic py-1 text-xs">2 morae</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Legenda Métrica Minimalista -->
+                <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--muted)] pt-1 border-t hairline-border">
+                    <div class="flex flex-wrap items-center gap-4">
+                        <span><strong class="text-[var(--fg)]">—</strong> Longa = 2 morae (2T)</span>
+                        <span><strong class="text-[var(--fg)]">⏑</strong> Breve = 1 mora (1T)</span>
+                        <span><strong class="text-[var(--fg)]">—x</strong> Anceps/Final = 2 morae (2T)</span>
+                    </div>
+                    <span class="italic">Espaço: Play/Pause · Setas: Navegar</span>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- =======================================================================
+         LÓGICA DA APLICAÇÃO (JAVASCRIPT)
+         ======================================================================= -->
+    <script>
+        /* ---------------------------------------------------------------------
+           1. BANCO DE EXEMPLOS CLÁSSICOS PRÉ-CARREGADOS
+           --------------------------------------------------------------------- */
+        const PRESETS = {
+            odyssey: {
+                raw: `ἀλλ ̓ ὅτε δὴ ἄρ ̓ ἔμελλε πάλιν οἶκόνδε νέεσθαι,\nζεύξασ ̓ ἡμιόνους, πτύξασά τε εἵματα καλά,`,
+                syllables: `ἀλλ' ὅ-τε δὴ ἄρ' ἔ-μελ-λε πά-λιν οἶ-κόν-δε νέ-ε-σθαι,\nζεύ-ξασ' ἡ-μι-ό-νους, πτύ-ξα-σά τε εἵ-μα-τα κα-λά,`,
+                scansion: `ἀλλ'(—) ὅ(⏑)-τε(⏑) | δὴ(—) ἄρ'(⏑) ἔ(⏑)- | μελ(—)-λε(⏑) πά(⏑)- | λιν(—) οἶ(—)- | κόν(—)-δε(⏑) νέ(⏑)- | ε(—)-σθαι,(—x)\nζεύ(—)-ξασ'(—) | ἡ(—)-μι(⏑)-ό(⏑)- | νους,(—) πτύ(⏑)-ξα(⏑)- | σά(—) τε(⏑) εἵ(⏑)- | μα(—)-τα(⏑) κα(⏑)- | λά,(—x)`
+            },
+            iliad: {
+                raw: `Μῆνιν ἄειδε, θεά, Πηληϊάδεω Ἀχιλῆος\nοὐλομένην, ἣ μυρί' Ἀχαιοῖς ἄλγε' ἔθηκεν,`,
+                syllables: `Μῆ-νιν ἄ-ει-δε, θε-ά, Πη-λη-ϊ-ά-δεω Ἀ-χι-λῆ-ος\nοὐ-λο-μέ-νην, ἣ μυ-ρί' Ἀ-χαι-οῖς ἄλ-γε' ἔ-θη-κεν,`,
+                scansion: `Μῆ(—)-νιν(⏑) ἄ(⏑)- | ει(—)-δε,(⏑) θε(⏑)- | ά,(—) Πη(—)- | λη(—)-ϊ(⏑)-ά(⏑)- | δεω(—) Ἀ(⏑)-χι(⏑)- | λῆ(—)-ος(—x)\nοὐ(—)-λο(⏑)-μέ(⏑)- | νην,(—) ἣ(—) | μυ(—)-ρί'(⏑) Ἀ(⏑)- | χαι(—)-οῖς(—) | ἄλ(—)-γε'(⏑) ἔ(⏑)- | θη(—)-κεν,(—x)`
+            },
+            aeneid: {
+                raw: `Arma virumque canō, Trōiae quī prīmus ab ōrīs\nĪtaliam, fātō profugus, Lāvīniaque vēnit`,
+                syllables: `Ar-ma vi-rum-que ca-nō, Trō-iae quī prī-mus ab ō-rīs\nĪ-ta-li-am, fā-tō pro-fu-gus, Lā-vī-ni-a-que vē-nit`,
+                scansion: `Ar(—)-ma(⏑) vi(⏑)- | rum(—)-que(⏑) ca(⏑)- | nō,(—) Trō(—)- | iae(—) quī(—) | prī(—)-mus(⏑) ab(⏑) | ō(—)-rīs(—x)\nĪ(—)-ta(⏑)-li(⏑)- | am,(—) fā(—)- | tō(—) pro(⏑)-fu(⏑)- | gus,(—) Lā(—)- | vī(—)-ni-a(⏑)-que(⏑) | vē(—)-nit(—x)`
+            }
+        };
+
+        let currentPresetKey = 'odyssey';
+
+        /* ---------------------------------------------------------------------
+           2. ESTADO CENTRAL DA APLICAÇÃO
+           --------------------------------------------------------------------- */
+        // Estrutura de parsedVerses:
+        // Array de versos; cada verso = Array de tokens silábicos:
+        // { text: "ζεύ", qty: "—", hyphenAfter: true, footAfter: false, footNumber: 1 }
+        let parsedVerses = [];
+
+        // Estado do Metrônomo
+        let isPlaying = false;
+        let currentVerseIdx = 0;
+        let currentSylIdx = 0; //Se igual a parsedVerses[v].length, representa a pausa de fim de verso
+        let bpm = 90;          // Batidas (morae) por minuto
+        let endPauseMorae = 1; // 0, 1 ou 2 morae de respiração no fim do verso
+        let loopMode = 'all';  // 'all' (todos os versos) ou 'one' (apenas o verso selecionado)
+        let loopEnabled = true;
+        let isMuted = false;
+
+        // Controle de Tempo de Alta Precisão (requestAnimationFrame)
+        let rafId = null;
+        let stepStartTime = 0;
+        let currentStepDurationMs = 0;
+        let secondMoraTriggered = false;
+
+        // Web Audio API Context
+        let audioCtx = null;
+
+        const ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+        const toRoman = (n) => ROMAN_NUMERALS[n - 1] || String(n);
+
+        /* ---------------------------------------------------------------------
+           3. PARSER E SERIALIZADOR DA NOTAÇÃO DE ESCANSÃO
+           --------------------------------------------------------------------- */
+        /**
+         * Converte uma linha da Etapa 3 como:
+         * "ζεύ(—)-ξασ'(—) | ἡ(—)-μι(⏑)-ό(⏑)- | νους,(—)"
+         * em uma lista estruturada de sílabas.
+         */
+        function parseScansionLine(lineStr) {
+            const tokens = [];
+            const trimmed = lineStr.trim();
+            if (!trimmed) return tokens;
+
+            // Divide por espaços mantendo barras '|' isoladas ou coladas
+            // Vamos percorrer via expressão regular que captura:
+            // 1) Barra de pé métrico '|'
+            // 2) Sílaba com quantidade opcional: texto(sinal) e hífen opcional
+            const regex = /\||([^\s|-]+?)(?:\((—x|—|⏑|×|x|-|u)\))?(-)?(?=\s|\||-|$)/g;
+            let match;
+            while ((match = regex.exec(trimmed)) !== null) {
+                if (match[0] === '|') {
+                    if (tokens.length > 0) {
+                        tokens[tokens.length - 1].footAfter = true;
+                    }
+                } else if (match[1]) {
+                    let rawQty = match[2] || '⏑';
+                    // Normaliza símbolos alternativos digitados pelo usuário
+                    if (rawQty === '-') rawQty = '—';
+                    if (rawQty === 'u') rawQty = '⏑';
+                    if (rawQty === 'x' || rawQty === '×') rawQty = '—x';
+
+                    tokens.push({
+                        text: match[1],
+                        qty: rawQty,
+                        hyphenAfter: Boolean(match[3]),
+                        footAfter: false
+                    });
+                }
+            }
+
+            computeFootNumbers(tokens);
+            return tokens;
+        }
+
+        /**
+         * Calcula a qual pé métrico (I, II, III...) pertence cada sílaba
+         */
+        function computeFootNumbers(tokens) {
+            let foot = 1;
+            for (let i = 0; i < tokens.length; i++) {
+                tokens[i].footNumber = foot;
+                if (tokens[i].footAfter) {
+                    foot++;
+                }
+            }
+        }
+
+        /**
+         * Converte o array estruturado `parsedVerses` de volta para o texto da Etapa 3
+         */
+        function serializeScansionVerses(verses) {
+            return verses.map(tokens => {
+                let out = '';
+                for (let i = 0; i < tokens.length; i++) {
+                    const t = tokens[i];
+                    out += `${t.text}(${t.qty})`;
+                    if (t.hyphenAfter) {
+                        out += '-';
+                    }
+                    if (t.footAfter) {
+                        out += ' | ';
+                    } else if (!t.hyphenAfter && i < tokens.length - 1) {
+                        out += ' ';
+                    }
+                }
+                return out.trim();
+            }).join('\n');
+        }
+
+        /* ---------------------------------------------------------------------
+           4. FLUXO DAS 3 ETAPAS (OFICINA DE ESCANSÃO)
+           --------------------------------------------------------------------- */
+        function loadPreset(key) {
+            if (!PRESETS[key]) return;
+            currentPresetKey = key;
+            stopMetronome();
+
+            document.getElementById('step1Input').value = PRESETS[key].raw;
+            document.getElementById('step2Input').value = PRESETS[key].syllables;
+            document.getElementById('step3Input').value = PRESETS[key].scansion;
+
+            syncFromStep3Text(false);
+            currentVerseIdx = 0;
+            currentSylIdx = 0;
+            updateAllRightPanelUI();
+        }
+
+        // Etapa 1 -> Etapa 2: Copia o texto bruto ou auxilia na silabação
+        function sendStep1ToStep2() {
+            const rawText = document.getElementById('step1Input').value.trim();
+            if (!rawText) return;
+            // Normaliza apóstrofos gregos variados para facilitar leitura e silabação
+            const normalized = rawText.replace(/\s*̓/g, "'").replace(/’/g, "'");
+            document.getElementById('step2Input').value = normalized;
+        }
+
+        function loadPresetSyllables() {
+            document.getElementById('step2Input').value = PRESETS[currentPresetKey].syllables;
+        }
+
+        // Heurística auxiliar de silabação grega/latina caso o usuário digite um verso novo na Etapa 1
+        function autoSyllabifyFromStep1() {
+            const raw = document.getElementById('step1Input').value.trim();
+            if (!raw) return;
+            const normalized = raw.replace(/\s*̓/g, "'").replace(/’/g, "'");
+
+            const lines = normalized.split('\n');
+            const syllabifiedLines = lines.map(line => {
+                return line.split(/\s+/).map(word => syllabifyClassicalWord(word)).join(' ');
+            });
+            document.getElementById('step2Input').value = syllabifiedLines.join('\n');
+        }
+
+        // Separador heurístico básico para grego politônico e latim
+        function syllabifyClassicalWord(word) {
+            if (word.length <= 2) return word;
+            // Se termina com elisão (ex: ἀλλ', ἄρ'), não separa se tiver só 1 núcleo vocálico
+            const vowelNucleusRegex = /(?:[αεηιουωάέήίόύώὰὲὴὶὸὺὼᾶῆῖῦῶἀἐἠἰὀὐὠἁἑἡἱὁὑὡἂἒἢἳὂὓὢἃἓἣἵὃὕὣἄἔἤἴὄὔὤἅἕἥἵὅὕὥἆἦἶὖὦἇἧἷὗὧᾳῃῳᾴῄῴᾲῂῲᾷῇῷἈἘἨἸὈὙὨἉἙἩἹὉὙὩaeiouyāēīōūȳ]+|[ϊϋΐΰῒῢ])/gi;
+            const matches = [...word.matchAll(vowelNucleusRegex)];
+            if (matches.length <= 1) return word;
+
+            let result = '';
+            let lastIdx = 0;
+            for (let i = 0; i < matches.length - 1; i++) {
+                const currEnd = matches[i].index + matches[i][0].length;
+                const nextStart = matches[i + 1].index;
+                const consCluster = word.slice(currEnd, nextStart);
+                let splitPos = currEnd;
+                if (consCluster.length <= 1) {
+                    splitPos = currEnd;
+                } else {
+                    // Divide o encontro consonantal no meio (ex: μελ-λε, κόν-δε)
+                    splitPos = currEnd + Math.floor(consCluster.length / 2);
+                }
+                result += word.slice(lastIdx, splitPos) + '-';
+                lastIdx = splitPos;
+            }
+            result += word.slice(lastIdx);
+            return result;
+        }
+
+        // Etapa 2 -> Etapa 3: Gera a grade de quantidades a partir das sílabas separadas por hífen
+        function generateGridFromStep2() {
+            const step2Text = document.getElementById('step2Input').value.trim();
+            if (!step2Text) return;
+
+            const lines = step2Text.split('\n').filter(l => l.trim().length > 0);
+            const newVerses = lines.map((line, vIdx) => {
+                const tokens = [];
+                const words = line.trim().split(/\s+/);
+                words.forEach(word => {
+                    const parts = word.split('-').filter(Boolean);
+                    parts.forEach((part, pIdx) => {
+                        tokens.push({
+                            text: part,
+                            qty: guessSyllableQuantity(part, pIdx === parts.length - 1 && words.indexOf(word) === words.length - 1),
+                            hyphenAfter: pIdx < parts.length - 1,
+                            footAfter: false,
+                            footNumber: 1
+                        });
+                    });
+                });
+
+                // Agrupa automaticamente pés datílicos sugeridos a cada 4 morae
+                let moraAcc = 0;
+                let footCount = 1;
+                for (let i = 0; i < tokens.length; i++) {
+                    if (i === tokens.length - 1) {
+                        tokens[i].qty = '—x';
+                    }
+                    const m = tokens[i].qty === '⏑' ? 1 : 2;
+                    moraAcc += m;
+                    if (moraAcc >= 4 && i < tokens.length - 1 && footCount < 6) {
+                        tokens[i].footAfter = true;
+                        moraAcc = 0;
+                        footCount++;
+                    }
+                }
+                computeFootNumbers(tokens);
+                return tokens;
+            });
+
+            parsedVerses = newVerses;
+            document.getElementById('step3Input').value = serializeScansionVerses(parsedVerses);
+            renderVisualScansionGrid();
+            currentVerseIdx = Math.min(currentVerseIdx, Math.max(0, parsedVerses.length - 1));
+            currentSylIdx = 0;
+            updateAllRightPanelUI();
+        }
+
+        // Estimativa inicial de quantidade por natureza (η, ω, ditongos, macrons latinos)
+        function guessSyllableQuantity(syl, isLastOfVerse) {
+            if (isLastOfVerse) return '—x';
+            if (/[ηωήώὴὼῆῶἠἡἤἥἦἧὠὡὤὥὦὧᾳῃῳāēīōūȳ]/i.test(syl)) return '—';
+            if (/(αι|ει|οι|υι|αυ|ευ|ου|ηυ|ae|oe|au)/i.test(syl)) return '—';
+            return '⏑';
+        }
+
+        function resetScansionExample() {
+            document.getElementById('step3Input').value = PRESETS[currentPresetKey].scansion;
+            syncFromStep3Text(false);
+        }
+
+        // Quando o usuário edita diretamente o textarea da Etapa 3b
+        function onStep3TextChange() {
+            syncFromStep3Text(true);
+        }
+
+        function syncFromStep3Text(preserveCursor) {
+            const raw = document.getElementById('step3Input').value;
+            const lines = raw.split('\n').filter(l => l.trim().length > 0);
+            parsedVerses = lines.map(l => parseScansionLine(l));
+
+            if (currentVerseIdx >= parsedVerses.length) {
+                currentVerseIdx = Math.max(0, parsedVerses.length - 1);
+            }
+            if (parsedVerses[currentVerseIdx] && currentSylIdx >= parsedVerses[currentVerseIdx].length) {
+                currentSylIdx = 0;
+            }
+
+            renderVisualScansionGrid();
+            updateAllRightPanelUI();
+        }
+
+        /* ---------------------------------------------------------------------
+           5. GRADE VISUAL INTERATIVA (ETAPA 3A)
+           --------------------------------------------------------------------- */
+        function renderVisualScansionGrid() {
+            const container = document.getElementById('visualScansionContainer');
+            const statsEl = document.getElementById('scansionStats');
+            container.innerHTML = '';
+
+            if (parsedVerses.length === 0) {
+                container.innerHTML = `<div class="text-sm text-[var(--muted)] italic py-4 text-center">Nenhuma sílaba carregada.</div>`;
+                statsEl.textContent = '';
+                return;
+            }
+
+            let totalSyllables = 0;
+
+            parsedVerses.forEach((tokens, vIdx) => {
+                totalSyllables += tokens.length;
+
+                const verseRow = document.createElement('div');
+                verseRow.className = 'flex flex-col gap-1.5 pb-3 last:pb-0 border-b last:border-b-0 hairline-border';
+
+                // Cabeçalho discreto do verso na grade
+                const totalMorae = tokens.reduce((acc, t) => acc + (t.qty === '⏑' ? 1 : 2), 0);
+                const totalFeet = tokens.length > 0 ? tokens[tokens.length - 1].footNumber : 0;
+
+                const header = document.createElement('div');
+                header.className = 'flex items-center justify-between text-[11px] uppercase tracking-widest text-[var(--muted)]';
+                header.innerHTML = `
+                    <span>Verso ${toRoman(vIdx + 1)}</span>
+                    <span>${totalFeet} pés · ${totalMorae} morae</span>
+                `;
+                verseRow.appendChild(header);
+
+                // Linha de blocos silábicos e divisores de pé
+                const blocksWrap = document.createElement('div');
+                blocksWrap.className = 'flex flex-wrap items-center gap-y-2';
+
+                tokens.forEach((token, sIdx) => {
+                    // Botão da Sílaba (alterna — -> ⏑ -> —x)
+                    const sylBtn = document.createElement('button');
+                    sylBtn.type = 'button';
+                    const isLong = token.qty === '—' || token.qty === '—x';
+                    sylBtn.className = `group flex flex-col items-center justify-center px-2 py-1 border transition select-none ${
+                        isLong 
+                            ? 'strong-border bg-[var(--bg)] font-medium' 
+                            : 'hairline-border bg-transparent'
+                    } hover:bg-[var(--fg)] hover:text-[var(--bg)]`;
+                    sylBtn.title = `Sílaba "${token.text}" (${token.qty}) — Clique para alternar quantidade`;
+                    sylBtn.onclick = () => cycleSyllableQuantity(vIdx, sIdx);
+
+                    const qtySpan = document.createElement('span');
+                    qtySpan.className = 'text-xs leading-none tracking-tighter mb-0.5 font-semibold';
+                    qtySpan.textContent = token.qty;
+
+                    const textSpan = document.createElement('span');
+                    textSpan.className = 'text-base sm:text-lg leading-tight';
+                    textSpan.textContent = token.text + (token.hyphenAfter ? '-' : '');
+
+                    sylBtn.appendChild(qtySpan);
+                    sylBtn.appendChild(textSpan);
+                    blocksWrap.appendChild(sylBtn);
+
+                    // Botão entre sílabas para adicionar/remover fronteira de pé (|)
+                    if (sIdx < tokens.length - 1) {
+                        const footBtn = document.createElement('button');
+                        footBtn.type = 'button';
+                        footBtn.onclick = () => toggleFootBoundary(vIdx, sIdx);
+                        if (token.footAfter) {
+                            footBtn.className = 'mx-1 px-1.5 py-2 text-sm font-bold bg-[var(--fg)] text-[var(--bg)] border strong-border leading-none hover:opacity-75 transition';
+                            footBtn.textContent = '|';
+                            footBtn.title = 'Remover fronteira de pé métrico';
+                        } else {
+                            footBtn.className = 'mx-0.5 px-1 py-2 text-xs text-[var(--muted)] opacity-35 hover:opacity-100 hover:border hairline-border leading-none transition';
+                            footBtn.textContent = '⋮';
+                            footBtn.title = 'Inserir fronteira de pé métrico (|)';
+                        }
+                        blocksWrap.appendChild(footBtn);
+                    }
+                });
+
+                verseRow.appendChild(blocksWrap);
+                container.appendChild(verseRow);
+            });
+
+            statsEl.textContent = `${parsedVerses.length} ${parsedVerses.length === 1 ? 'verso' : 'versos'} · ${totalSyllables} sílabas`;
+        }
+
+        // Alterna a quantidade da sílaba: — -> ⏑ -> —x -> —
+        function cycleSyllableQuantity(vIdx, sIdx) {
+            const token = parsedVerses[vIdx]?.[sIdx];
+            if (!token) return;
+
+            if (token.qty === '—') token.qty = '⏑';
+            else if (token.qty === '⏑') token.qty = '—x';
+            else token.qty = '—';
+
+            // Atualiza o texto da Etapa 3b e a UI
+            document.getElementById('step3Input').value = serializeScansionVerses(parsedVerses);
+            renderVisualScansionGrid();
+            updateAllRightPanelUI();
+        }
+
+        // Liga/desliga a barra de pé métrico (|) após uma sílaba
+        function toggleFootBoundary(vIdx, sIdx) {
+            const tokens = parsedVerses[vIdx];
+            if (!tokens || !tokens[sIdx]) return;
+
+            tokens[sIdx].footAfter = !tokens[sIdx].footAfter;
+            computeFootNumbers(tokens);
+
+            document.getElementById('step3Input').value = serializeScansionVerses(parsedVerses);
+            renderVisualScansionGrid();
+            updateAllRightPanelUI();
+        }
+
+        /* ---------------------------------------------------------------------
+           6. SINTETIZADOR DE ÁUDIO PERCUSSIVO (WEB AUDIO API)
+           --------------------------------------------------------------------- */
+        function ensureAudioContext() {
+            if (!audioCtx) {
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    audioCtx = new AudioContextClass();
+                }
+            }
+            if (audioCtx && audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        /**
+         * Emite clique acústico tipo bloco de madeira sutil:
+         * - 'long': tom de madeira grave e encorpado (início de sílaba longa / anceps)
+         * - 'short': clique mais curto e agudo (sílaba breve)
+         * - 'submora': pulso secundário muito suave para marcar a 2ª mora de uma sílaba longa
+         */
+        function playMetronomeClick(type, isFootStart = false) {
+            if (isMuted) return;
+            try {
+                ensureAudioContext();
+                if (!audioCtx) return;
+
+                const now = audioCtx.currentTime;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                osc.type = 'triangle';
+
+                if (type === 'long') {
+                    // Madeira grave (destaque extra se for início de pé métrico)
+                    const baseFreq = isFootStart ? 440 : 390;
+                    osc.frequency.setValueAtTime(baseFreq, now);
+                    osc.frequency.exponentialRampToValueAtTime(115, now + 0.065);
+
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.linearRampToValueAtTime(isFootStart ? 0.36 : 0.28, now + 0.004);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.075);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'short') {
+                    // Clique curto e agudo para sílaba breve (⏑)
+                    const baseFreq = isFootStart ? 780 : 700;
+                    osc.frequency.setValueAtTime(baseFreq, now);
+                    osc.frequency.exponentialRampToValueAtTime(240, now + 0.038);
+
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.linearRampToValueAtTime(0.20, now + 0.003);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.042);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.045);
+                } else if (type === 'submora') {
+                    // Pulso interno sutil na 2ª mora de sílaba longa
+                    osc.frequency.setValueAtTime(310, now);
+                    osc.frequency.exponentialRampToValueAtTime(130, now + 0.025);
+
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.linearRampToValueAtTime(0.07, now + 0.003);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.03);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.035);
+                }
+            } catch (e) {
+                // Ignora falhas de áudio caso o navegador bloqueie antes de interação
+            }
+        }
+
+        /* ---------------------------------------------------------------------
+           7. MOTOR DO METRÔNOMO MORAICO E ANIMAÇÃO EM TEMPO REAL
+           --------------------------------------------------------------------- */
+        function getMoraDurationMs() {
+            return (60 / bpm) * 1000;
+        }
+
+        function getSyllableMoraCount(token) {
+            if (!token) return endPauseMorae;
+            return token.qty === '⏑' ? 1 : 2;
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                pauseMetronome();
+            } else {
+                startMetronome();
+            }
+        }
+
+        function startMetronome() {
+            if (parsedVerses.length === 0 || !parsedVerses[currentVerseIdx]?.length) return;
+            ensureAudioContext();
+            isPlaying = true;
+            updatePlayButtonUI();
+
+            beginCurrentSyllableStep(performance.now());
+            rafId = requestAnimationFrame(metronomeLoop);
+        }
+
+        function pauseMetronome() {
+            isPlaying = false;
+            if (rafId) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+            document.getElementById('syllableProgressBar').style.width = '0%';
+            updatePlayButtonUI();
+        }
+
+        function stopMetronome() {
+            pauseMetronome();
+            currentSylIdx = 0;
+        }
+
+        function resetMetronome() {
+            pauseMetronome();
+            if (loopMode === 'all') {
+                currentVerseIdx = 0;
+            }
+            currentSylIdx = 0;
+            updateAllRightPanelUI();
+        }
+
+        // Inicia a contagem de tempo e som da sílaba atual (ou pausa de fim de verso)
+        function beginCurrentSyllableStep(nowTimestamp) {
+            const tokens = parsedVerses[currentVerseIdx] || [];
+            const isEndPause = currentSylIdx >= tokens.length;
+
+            stepStartTime = nowTimestamp;
+            secondMoraTriggered = false;
+
+            if (isEndPause) {
+                currentStepDurationMs = endPauseMorae * getMoraDurationMs();
+                updateAllRightPanelUI();
+            } else {
+                const token = tokens[currentSylIdx];
+                const morae = getSyllableMoraCount(token);
+                currentStepDurationMs = morae * getMoraDurationMs();
+
+                const isFootStart = currentSylIdx === 0 || tokens[currentSylIdx - 1]?.footAfter;
+                playMetronomeClick(morae === 2 ? 'long' : 'short', isFootStart);
+
+                // Pequeno efeito visual no visor central
+                const displayBox = document.getElementById('mainDisplayBox');
+                displayBox.classList.remove('beat-flash');
+                void displayBox.offsetWidth;
+                displayBox.classList.add('beat-flash');
+
+                updateAllRightPanelUI();
+            }
+        }
+
+        // Loop de animação contínua a 60fps para barra fluida e precisão moraica
+        function metronomeLoop(now) {
+            if (!isPlaying) return;
+
+            const elapsed = now - stepStartTime;
+            const progress = currentStepDurationMs > 0 ? Math.min(1, elapsed / currentStepDurationMs) : 1;
+
+            // Atualiza barra de progresso inferior do visor e da sílaba no karaokê
+            const pct = (progress * 100).toFixed(1) + '%';
+            document.getElementById('syllableProgressBar').style.width = pct;
+            const activeKaraokeBar = document.getElementById(`karaoke-bar-${currentSylIdx}`);
+            if (activeKaraokeBar) {
+                activeKaraokeBar.style.width = pct;
+            }
+
+            // Se for uma sílaba longa (2 morae), acende o 2º ponto de mora na metade do tempo (50%)
+            const tokens = parsedVerses[currentVerseIdx] || [];
+            const token = tokens[currentSylIdx];
+            if (token && getSyllableMoraCount(token) === 2 && !secondMoraTriggered && progress >= 0.5) {
+                secondMoraTriggered = true;
+                playMetronomeClick('submora', false);
+                highlightMoraDot(1);
+            }
+
+            if (elapsed >= currentStepDurationMs) {
+                advanceToNextStep(now);
+            }
+
+            if (isPlaying) {
+                rafId = requestAnimationFrame(metronomeLoop);
+            }
+        }
+
+        function advanceToNextStep(nowTimestamp) {
+            const tokens = parsedVerses[currentVerseIdx] || [];
+            currentSylIdx++;
+
+            // Verifica se chegou ao fim das sílabas do verso
+            if (currentSylIdx === tokens.length) {
+                if (endPauseMorae > 0) {
+                    // Executa a pausa de fim de verso (respiração)
+                    beginCurrentSyllableStep(nowTimestamp);
+                    return;
+                } else {
+                    // Sem pausa configurada, avança imediatamente ao próximo verso
+                    currentSylIdx++;
+                }
+            }
+
+            // Passou da última sílaba (e eventual pausa)
+            if (currentSylIdx > tokens.length) {
+                if (loopMode === 'one') {
+                    if (loopEnabled) {
+                        currentSylIdx = 0;
+                        beginCurrentSyllableStep(nowTimestamp);
+                    } else {
+                        currentSylIdx = 0;
+                        pauseMetronome();
+                        updateAllRightPanelUI();
+                    }
+                } else {
+                    // Modo 'all' (Todos os versos)
+                    if (currentVerseIdx < parsedVerses.length - 1) {
+                        currentVerseIdx++;
+                        currentSylIdx = 0;
+                        beginCurrentSyllableStep(nowTimestamp);
+                    } else if (loopEnabled) {
+                        currentVerseIdx = 0;
+                        currentSylIdx = 0;
+                        beginCurrentSyllableStep(nowTimestamp);
+                    } else {
+                        currentVerseIdx = 0;
+                        currentSylIdx = 0;
+                        pauseMetronome();
+                        updateAllRightPanelUI();
+                    }
+                }
+                return;
+            }
+
+            beginCurrentSyllableStep(nowTimestamp);
+        }
+
+        // Navegação manual passo a passo
+        function stepForward() {
+            const tokens = parsedVerses[currentVerseIdx] || [];
+            if (!tokens.length) return;
+            if (currentSylIdx < tokens.length - 1) {
+                currentSylIdx++;
+            } else if (loopMode === 'all' && currentVerseIdx < parsedVerses.length - 1) {
+                currentVerseIdx++;
+                currentSylIdx = 0;
+            } else {
+                currentSylIdx = 0;
+            }
+            if (isPlaying) {
+                beginCurrentSyllableStep(performance.now());
+            } else {
+                updateAllRightPanelUI();
+            }
+        }
+
+        function stepBackward() {
+            const tokens = parsedVerses[currentVerseIdx] || [];
+            if (!tokens.length) return;
+            if (currentSylIdx > 0) {
+                currentSylIdx--;
+            } else if (loopMode === 'all' && currentVerseIdx > 0) {
+                currentVerseIdx--;
+                currentSylIdx = Math.max(0, (parsedVerses[currentVerseIdx]?.length || 1) - 1);
+            } else {
+                currentSylIdx = tokens.length - 1;
+            }
+            if (isPlaying) {
+                beginCurrentSyllableStep(performance.now());
+            } else {
+                updateAllRightPanelUI();
+            }
+        }
+
+        function jumpToSyllable(vIdx, sIdx) {
+            currentVerseIdx = vIdx;
+            currentSylIdx = sIdx;
+            if (isPlaying) {
+                beginCurrentSyllableStep(performance.now());
+            } else {
+                const token = parsedVerses[vIdx]?.[sIdx];
+                if (token) {
+                    const isFootStart = sIdx === 0 || parsedVerses[vIdx][sIdx - 1]?.footAfter;
+                    playMetronomeClick(token.qty === '⏑' ? 'short' : 'long', isFootStart);
+                }
+                updateAllRightPanelUI();
+            }
+        }
+
+        /* ---------------------------------------------------------------------
+           8. ATUALIZAÇÃO DO PAINEL DIREITO (VISOR + KARAOKÊ + CONTROLES)
+           --------------------------------------------------------------------- */
+        function updateAllRightPanelUI() {
+            renderVerseTabs();
+            renderMainDisplay();
+            renderKaraokeLine();
+        }
+
+        function renderVerseTabs() {
+            const container = document.getElementById('verseTabsContainer');
+            container.innerHTML = '';
+
+            parsedVerses.forEach((tokens, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                const active = idx === currentVerseIdx;
+                btn.className = `btn-classic px-3 py-1 text-xs uppercase tracking-widest ${active ? 'active font-semibold' : ''}`;
+                
+                // Mostra prévia das primeiras duas palavras do verso
+                const preview = tokens.slice(0, 3).map(t => t.text).join('');
+                btn.textContent = `Verso ${toRoman(idx + 1)} (${preview}…)`;
+                btn.onclick = () => {
+                    currentVerseIdx = idx;
+                    currentSylIdx = 0;
+                    if (isPlaying) {
+                        beginCurrentSyllableStep(performance.now());
+                    } else {
+                        updateAllRightPanelUI();
+                    }
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderMainDisplay() {
+            const tokens = parsedVerses[currentVerseIdx] || [];
+            const verseLabel = document.getElementById('displayVerseLabel');
+            const footLabel = document.getElementById('displayFootLabel');
+            const moraLabel = document.getElementById('displayMoraLabel');
+            const qtySymbol = document.getElementById('displayQuantitySymbol');
+            const sylText = document.getElementById('displaySyllableText');
+            const moraDots = document.getElementById('displayMoraDots');
+
+            verseLabel.textContent = `Verso ${toRoman(currentVerseIdx + 1)}`;
+
+            if (tokens.length === 0) {
+                footLabel.textContent = '—';
+                moraLabel.textContent = '0 Mora';
+                qtySymbol.textContent = '';
+                sylText.textContent = '—';
+                moraDots.innerHTML = '';
+                return;
+            }
+
+            // Verifica se está na pausa respiratória de fim de verso
+            if (currentSylIdx >= tokens.length) {
+                footLabel.textContent = 'Pausa Final';
+                moraLabel.textContent = `${endPauseMorae} ${endPauseMorae === 1 ? 'Mora' : 'Morae'}`;
+                qtySymbol.textContent = '𝄽';
+                sylText.textContent = '· · ·';
+                moraDots.innerHTML = '';
+                for (let i = 0; i < endPauseMorae; i++) {
+                    const dot = document.createElement('span');
+                    dot.className = 'w-2.5 h-2.5 border hairline-border';
+                    moraDots.appendChild(dot);
+                }
+                return;
+            }
+
+            const token = tokens[currentSylIdx];
+            const morae = getSyllableMoraCount(token);
+
+            footLabel.textContent = `Pé ${toRoman(token.footNumber)}`;
+            moraLabel.textContent = `${morae} ${morae === 1 ? 'Mora' : 'Morae'}`;
+            qtySymbol.textContent = token.qty;
+            sylText.textContent = token.text + (token.hyphenAfter ? '-' : '');
+
+            // Renderiza os indicadores de mora (1 quadrado para breve, 2 para longa)
+            moraDots.innerHTML = '';
+            for (let i = 0; i < morae; i++) {
+                const dot = document.createElement('span');
+                dot.id = `mora-dot-${i}`;
+                dot.className = `w-3 h-3 border strong-border transition-colors ${i === 0 ? 'bg-[var(--fg)]' : 'bg-transparent'}`;
+                moraDots.appendChild(dot);
+            }
+        }
+
+        function highlightMoraDot(dotIndex) {
+            const dot = document.getElementById(`mora-dot-${dotIndex}`);
+            if (dot) {
+                dot.classList.remove('bg-transparent');
+                dot.classList.add('bg-[var(--fg)]');
+            }
+        }
+
+        function renderKaraokeLine() {
+            const container = document.getElementById('karaokeContainer');
+            const totalMoraeLabel = document.getElementById('verseTotalMoraeLabel');
+            container.innerHTML = '';
+
+            const tokens = parsedVerses[currentVerseIdx] || [];
+            const totalMorae = tokens.reduce((acc, t) => acc + getSyllableMoraCount(t), 0);
+            totalMoraeLabel.textContent = `${totalMorae} morae no verso`;
+
+            tokens.forEach((token, sIdx) => {
+                const isActive = sIdx === currentSylIdx;
+                const isPast = sIdx < currentSylIdx;
+                const morae = getSyllableMoraCount(token);
+
+                // Bloco de sílaba proporcional à duração (longa é visualmente mais larga que breve)
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.onclick = () => jumpToSyllable(currentVerseIdx, sIdx);
+                item.className = `relative flex flex-col items-center justify-center py-1.5 transition border ${
+                    morae === 2 ? 'px-3 min-w-[54px]' : 'px-2 min-w-[36px]'
+                } ${
+                    isActive
+                        ? 'strong-border bg-[var(--fg)] text-[var(--bg)] font-semibold scale-105 z-10'
+                        : isPast
+                        ? 'hairline-border bg-[var(--bg)] opacity-60 hover:opacity-100'
+                        : 'hairline-border bg-[var(--bg)] hover:border-[var(--fg)]'
+                }`;
+
+                const qtyEl = document.createElement('span');
+                qtyEl.className = 'text-[11px] leading-none mb-0.5';
+                qtyEl.textContent = token.qty;
+
+                const txtEl = document.createElement('span');
+                txtEl.className = 'text-lg sm:text-xl leading-tight';
+                txtEl.textContent = token.text + (token.hyphenAfter ? '-' : '');
+
+                // Barra de preenchimento fluida individual dentro do item ativo
+                const barTrack = document.createElement('div');
+                barTrack.className = 'absolute bottom-0 left-0 right-0 h-1 bg-transparent overflow-hidden';
+                const barFill = document.createElement('div');
+                barFill.id = `karaoke-bar-${sIdx}`;
+                barFill.className = `h-full ${isActive ? 'bg-[var(--bg)]' : 'bg-transparent'} w-0`;
+                barTrack.appendChild(barFill);
+
+                item.appendChild(qtyEl);
+                item.appendChild(txtEl);
+                item.appendChild(barTrack);
+                container.appendChild(item);
+
+                // Divisor visual de pé métrico (|)
+                if (token.footAfter && sIdx < tokens.length - 1) {
+                    const sep = document.createElement('span');
+                    sep.className = 'mx-1.5 text-xl font-light text-[var(--muted)] select-none';
+                    sep.textContent = '|';
+                    container.appendChild(sep);
+                }
+            });
+        }
+
+        /* ---------------------------------------------------------------------
+           9. CONTROLES DE CONFIGURAÇÃO (BPM, PAUSA, LOOP, TEMA, ATALHOS)
+           --------------------------------------------------------------------- */
+        function updatePlayButtonUI() {
+            const icon = document.getElementById('playPauseIcon');
+            const text = document.getElementById('playPauseText');
+            if (isPlaying) {
+                icon.textContent = '❚❚';
+                text.textContent = 'Pausar';
+            } else {
+                icon.textContent = '▶';
+                text.textContent = 'Iniciar';
+            }
+        }
+
+        function updateBpm(val) {
+            bpm = parseInt(val, 10) || 90;
+            document.getElementById('bpmValueDisplay').textContent = bpm;
+            const ms = Math.round((60 / bpm) * 1000);
+            document.getElementById('msValueDisplay').textContent = `(${ms} ms)`;
+
+            if (isPlaying) {
+                // Ajusta a duração do passo em andamento proporcionalmente
+                const tokens = parsedVerses[currentVerseIdx] || [];
+                const token = tokens[currentSylIdx];
+                const morae = getSyllableMoraCount(token);
+                currentStepDurationMs = morae * getMoraDurationMs();
+            }
+        }
+
+        function setEndPause(morae) {
+            endPauseMorae = morae;
+            [0, 1, 2].forEach(n => {
+                const btn = document.getElementById(`pauseBtn${n}`);
+                if (n === morae) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+        }
+
+        function setLoopMode(mode) {
+            loopMode = mode;
+            document.getElementById('loopAllBtn').classList.toggle('active', mode === 'all');
+            document.getElementById('loopOneBtn').classList.toggle('active', mode === 'one');
+        }
+
+        function toggleLoopEnabled() {
+            loopEnabled = !loopEnabled;
+            const btn = document.getElementById('loopToggleBtn');
+            btn.classList.toggle('active', loopEnabled);
+            btn.textContent = loopEnabled ? '∞ Loop: Sim' : '∞ Loop: Não';
+        }
+
+        function toggleMute() {
+            isMuted = !isMuted;
+            const btn = document.getElementById('muteToggleBtn');
+            const text = document.getElementById('muteText');
+            btn.classList.toggle('active', !isMuted);
+            text.textContent = isMuted ? 'Som: Mudo' : 'Som: Ativo';
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const isDark = html.classList.toggle('dark');
+            document.getElementById('themeLabel').textContent = isDark ? 'Claro' : 'Escuro';
+        }
+
+        // Atalhos de teclado (quando não estiver digitando em um textarea)
+        window.addEventListener('keydown', (e) => {
+            const tag = document.activeElement?.tagName?.toLowerCase();
+            if (tag === 'textarea' || tag === 'input') return;
+
+            if (e.code === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            } else if (e.code === 'ArrowRight') {
+                e.preventDefault();
+                stepForward();
+            } else if (e.code === 'ArrowLeft') {
+                e.preventDefault();
+                stepBackward();
+            }
+        });
+
+        /* ---------------------------------------------------------------------
+           10. INICIALIZAÇÃO
+           --------------------------------------------------------------------- */
+        window.onload = function () {
+            loadPreset('odyssey');
+            updateBpm(90);
+        };
+    </script>
+</body>
+</html>
